@@ -3,7 +3,7 @@ from datetime import datetime
 import numpy as np
 import xarray as xr
 
-import pkg_resources
+from importlib.resources import files as _importlib_files
 
 import logging
 log = logging.getLogger(__name__)
@@ -68,9 +68,7 @@ def read_flashes(glm, target, base_date=None, lon_range=None, lat_range=None,
         See the documentation for read_flash_chunk for how the above arguments are used.
      """
     if corner_pickle is None:
-        resource_package = __name__  # Could be any module/package name
-        resource_path = '/'.join(('G16_corner_lut_fixedgrid.pickle',))
-        corner_pickle = pkg_resources.resource_filename(resource_package, resource_path)
+        corner_pickle = str(_importlib_files('glmtools.io').joinpath('G16_corner_lut_fixedgrid.pickle'))
         # print(corner_pickle)
     if ((lon_range is not None) | (lat_range is not None) |
         (x_range is not None) | (y_range is not None) |
@@ -394,8 +392,8 @@ def read_flash_chunk(flash_data, glm=None, target=None, base_date=None, nadir_lo
 
         if fixed_grid:
             pt = flash_data.product_time.dt
-            date = datetime(pt.year.item(), pt.month.item(), pt.day.item(),
-                            pt.hour.item(), pt.minute.item(), pt.second.item())
+            date = datetime(int(pt.year), int(pt.month), int(pt.day),
+                            int(pt.hour), int(pt.minute), int(pt.second))
 
             x_lut, y_lut, corner_lut = load_pixel_corner_lookup(corner_pickle)
             # Convert from microradians to radians
